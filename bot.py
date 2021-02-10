@@ -16,12 +16,14 @@ async def on_ready():
 @bot.command(name='hi')
 async def hi(ctx):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    await ctx.send(f'안녕하세요 name:{ctx.author.name} display_name: {ctx.author.display_name()}님! : {current_time}')
+    send_message = f'안녕하세요 name:{ctx.author.name} display_name: {ctx.author.display_name}님! : {current_time}'
+    await ctx.send(send_message)
     
 @bot.command(name='bye')
 async def bye(ctx):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    await ctx.send(f'안녕히가세요 name:{ctx.author.name} display_name: {ctx.author.display_name()}님! : {current_time}')
+    send_message = f'안녕히가세요 name:{ctx.author.name} display_name: {ctx.author.display_name}님! : {current_time}'
+    await ctx.send(send_message)
 
 @bot.event
 async def on_error(event, *args, **kwargs):
