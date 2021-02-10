@@ -15,15 +15,15 @@ async def on_ready():
 
 @bot.command(name='hi')
 async def hi(ctx):
-    current_time = datetime.now().strftime("%Y년%m월%d일 %H시%M분%S초")
-    current_time = current_time + timedelta(seconds=120)
+    current_time = datetime.now() + timedelta(seconds=120)
+    current_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
     send_message = f'안녕하세요 name:{ctx.author.name}님! : {current_time}'
     await ctx.send(send_message)
     
 @bot.command(name='bye')
 async def bye(ctx):
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    current_time = current_time + timedelta(seconds=120)
+    current_time = datetime.now() + timedelta(seconds=120)
+    current_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
     send_message = f'안녕히가세요 name:{ctx.author.name}님! : {current_time}'
     await ctx.send(send_message)
 
