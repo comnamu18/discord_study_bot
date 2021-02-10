@@ -69,7 +69,7 @@ async def bye(ctx):
     await ctx.send(send_message)
 
 @bot.command(name='list')
-async def bye(ctx):
+async def list(ctx):
     send_message = '총 공부 시간 리스트 (정렬X)\n'
     for user_name, study_record in user_dict.items():
         elapsed_time = handle_timedelta(study_record["elapsed_time"])
