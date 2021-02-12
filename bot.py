@@ -31,7 +31,7 @@ def handle_timedelta(td):
     if hours != 0:
         return_string += f'{hours}시간 '
     if minutes != 0:
-        return_string += f'{minutes}분'
+        return_string += f'{minutes}분 '
     if seconds != 0:
         return_string += f'{seconds}초'
 
