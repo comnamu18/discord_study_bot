@@ -1,8 +1,11 @@
 import os
-from datetime import datetime, timedelta 
 
 from discord.ext import commands
 from dotenv import load_dotenv
+
+# For get_current_time
+from urllib import request, error
+from datetime import datetime, timedelta 
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -11,7 +14,8 @@ bot = commands.Bot(command_prefix='!')
 user_dict = {}
 
 def get_current_time():
-    current_time = datetime.now() + timedelta(seconds=120)
+    str_time = request.urlopen('https://www.naver.com').headers['Date']
+    current_time = datetime.strptime(str_time,'%a, %d %b %Y %H:%M:%S %Z') - timedelta(hours=-9) 
     return current_time.strftime("%Y-%m-%d %H:%M:%S")
 
 def calculate_elpased(start_time, end_time):
