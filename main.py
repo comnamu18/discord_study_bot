@@ -1,7 +1,4 @@
-from logging import currentframe
 import os
-import sqlite3
-from datetime import datetime 
 
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -13,6 +10,7 @@ load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 db_name = os.getenv('DISCORD_DB')
 tb_name = os.getenv('DISCORD_DB_TB')
+admin_name = os.getenv('DISCORD_ADMIN')
 
 bot = commands.Bot(command_prefix='!')
 
@@ -30,12 +28,22 @@ async def hi(ctx):
 @bot.command(name='bye')
 async def bye(ctx):
     current_time = get_current_time()
+    end_study(ctx.author.name, tb_name, current_time)
     await ctx.send(f'{current_time} :안녕히가세요 {ctx.author.name}님!')
 
 @bot.command(name='list')
 async def listing(ctx):
     list_all_from_db = list_study(tb_name)
     await ctx.send(list_all_from_db)
+
+@bot.command(name='exit')
+async def exitBot(ctx):
+    if ctx.author.name == admin_name:
+        close_db()
+        print("Close the bot")
+        return
+    else:
+        await ctx.send("Admin만 이 명령어를 사용할 수 있습니다.")
 
 @bot.event
 async def on_error(event, *args, **kwargs):

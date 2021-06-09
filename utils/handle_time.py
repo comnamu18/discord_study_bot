@@ -1,5 +1,4 @@
-# For get_current_time
-from urllib import request, error
+from urllib import request
 from datetime import datetime, timedelta 
 
 def get_current_time():
