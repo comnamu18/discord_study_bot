@@ -8,7 +8,7 @@ from utils.User import User
 
 class DB_Handler:
     def __init__(self, db_name):
-        self.engine = create_engine(db_name, echo=True)
+        self.engine = create_engine(db_name)
         self.session = sessionmaker(bind=self.engine)()
 
     def create_user_table(self):
