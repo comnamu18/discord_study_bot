@@ -8,11 +8,15 @@ from utils.User import User
 
 class DB_Handler:
     def __init__(self, db_name):
-        self.engine = create_engine(f"sqlite:///{db_name}", echo=True)
+        self.engine = create_engine(db_name, echo=True)
         self.session = sessionmaker(bind=self.engine)()
 
     def create_user_table(self):
         User.__table__.create(bind=self.engine, checkfirst=True)
+        self.session.commmit()
+
+    def create_new_user(self, user_nm):
+        return User(user_nm)
 
     def get_all_users(self):
         return self.session.query(User).all()
@@ -24,6 +28,11 @@ class DB_Handler:
         print(f"start study : {current_time}")
 
         user = self.get_user_object_by_user_name(user_name)
+
+        if user is None:
+            user = self.create_new_user(user_name)
+            self.session.add(user)
+
         user.last_login_hms = current_time
         user.last_out_hms = None
 
