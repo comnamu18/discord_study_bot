@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "discord_study_bot"
+version = "0.1.0"
+description = ""
+authors = ["Kim SangHeon <comnamu18@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+"discord.py" = "1.7.3"
+python-dotenv = "0.18.0"
+SQLAlchemy = "1.4.20"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
