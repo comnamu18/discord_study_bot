@@ -62,7 +62,7 @@ class DbHandler:
         with self.sessionMaker() as currentSession:
             user = currentSession.query(User).filter_by(name=user_name).first()
 
-            if user.last_end_time is not None:
+            if user is None or user.last_end_time is not None:
                 return f"{user_name}님은 최근에 공부를 시작하신 적이 없네요"
 
             elapsed_time = utils.handle_time. \
