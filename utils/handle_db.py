@@ -1,81 +1,89 @@
-from utils.handle_time import calculate_elapsed
-import sqlite3
+import utils.handle_time
+from table.user import User
+from table.studyLog import StudyLog
 
-conn = None
-COLUMNS = "USER_NM, STD_AMT, STD_CNT, LAST_LOGIN_HMS, LAST_OUT_HMS"
+from sqlalchemy.orm import sessionmaker as sqlalchemy_sessionmaker
+from sqlalchemy import create_engine as sqlalchemy_create_engine
 
-def init_db(db_name, table_name):
-    global conn
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-    c.execute(f"SELECT COUNT(*) FROM sqlite_master WHERE name='{table_name}';")
 
-    if c.fetchone()[0] == 0:
-        c.execute(f"CREATE TABLE {table_name}(USER_NM text, STD_AMT int, STD_CNT int, LAST_LOGIN_HMS timestamp, LAST_OUT_HMS timestamp);")
-    conn.commit()
+class DbHandler:
+    def __init__(self, db_name):
+        print(f"DbHandler init {db_name}")
 
-def start_study(user_name, table_name, current_time):
-    global conn
-    print(f"start study : {current_time}")
-    query = None
-    datas = None
+        self.engine = sqlalchemy_create_engine(db_name)
+        self.sessionMaker = sqlalchemy_sessionmaker(autocommit=False, bind=self.engine)
+        self.create_tables()
 
-    c = conn.cursor()
-    c.execute(f"SELECT * FROM {table_name} WHERE USER_NM = ?", (user_name, ))
-    rows = c.fetchall()
-    if len(rows) == 0:
-        query = f"INSERT INTO {table_name}({COLUMNS}) VALUES (?, ?, ?, ?, ?)"
-        datas = [user_name, 0, 0, current_time, "NULL"]
-        print(f"New User : {user_name}")
-    else:
-        c.execute(f"SELECT * FROM {table_name} WHERE USER_NM = ?", (user_name, ))
-        query = f"UPDATE {table_name} SET LAST_LOGIN_HMS = ? WHERE USER_NM = ?"
-        datas = [current_time, user_name]
+    def create_tables(self):
+        with self.sessionMaker() as currentSession:
+            User.__table__.create(bind=self.engine, checkfirst=True)
+            StudyLog.__table__.create(bind=self.engine, checkfirst=True)
+            currentSession.commit()
 
-    c.execute(query, datas)
-    conn.commit()
+    def get_all_users(self):
+        with self.sessionMaker() as currentSession:
+            return currentSession.query(User).all()
 
-    return None
+    def get_all_study_logs(self, user_name):
+        with self.sessionMaker() as currentSession:
+            return currentSession.query(StudyLog).filter_by(user_name=user_name).all()
 
-def end_study(user_name, table_name, current_time):
-    global conn
-    print(f"end study : {current_time}")
-    query = f"UPDATE {table_name} SET STD_AMT = ?,  STD_CNT = ?, LAST_LOGIN_HMS =?, LAST_OUT_HMS = ? WHERE USER_NM = ?"
-    datas = []
+    def start_study(self, user_name, current_time):
+        print(f"start study : {current_time}")
 
-    c = conn.cursor()
-    c.execute(f"SELECT * FROM {table_name} WHERE USER_NM=?", (user_name,))
-    rows = c.fetchall()[0]
-    
-    if len(rows) == 0:
-        print(f"New User : {user_name}")
-        return -1
-    
-    start_time = rows[3]
-    elapsed_time = calculate_elapsed(start_time, current_time).total_seconds()
-    datas = (rows[1]+elapsed_time, rows[2]+1, "NULL", current_time, user_name)
+        with self.sessionMaker() as currentSession:
+            user = currentSession.query(User).filter_by(name=user_name).first()
 
-    c.execute(query, datas)
-    conn.commit()
+            if user is None:
+                user = User(user_name)
+                currentSession.add(user)
 
-    return None
+            user.last_start_time = current_time
+            user.last_end_time = None
 
-def list_study(table_name):
-    global conn
-    c = conn.cursor()
-    c.execute(f"SELECT * FROM {table_name}")
-    rows = c.fetchall()
-    conn.commit()
-    results = ""
-    for row in rows:
-        results += str(row) + "\n"
-    return results
+            # 가장 최근 스터디 기록
+            recent_study_log = currentSession.query(StudyLog).filter_by(user_name=user_name) \
+                .order_by(StudyLog.id.desc()).first()
 
-def close_db():
-    global conn
-    conn.close()
+            # 로그가 없음 = 첫 스터디
+            if recent_study_log is None:
+                currentSession.add(StudyLog(user_name, current_time))
+            # recent_study_log.end_time is None -> 지난 스터디에서 !bye를 안 함
+            elif recent_study_log.end_time is None:
+                recent_study_log.start_time = current_time
+            else:
+                currentSession.add(StudyLog(user_name, current_time))
 
-    return None
+            currentSession.commit()
 
-def edit_time(user_name, edit_type):
-    return None
+    def end_study(self, user_name, current_time):
+        print(f"end study : {current_time}")
+
+        with self.sessionMaker() as currentSession:
+            user = currentSession.query(User).filter_by(name=user_name).first()
+
+            if user.last_end_time is not None:
+                return f"{user_name}님은 최근에 공부를 시작하신 적이 없네요"
+
+            elapsed_time = utils.handle_time. \
+                calculate_elapsed(user.last_start_time, current_time).total_seconds()
+
+            user.study_amount += elapsed_time
+            user.study_count += 1
+            user.last_end_time = current_time
+
+            recent_study_log = currentSession.query(StudyLog).filter_by(user_name=user_name) \
+                .order_by(StudyLog.id.desc()).first()
+            recent_study_log.end_time = current_time
+
+            currentSession.commit()
+
+    def delete_user(self, user_name):
+        with self.sessionMaker() as currentSession:
+            user = currentSession.query(User).filter_by(name=user_name).first()
+            currentSession.delete(user)
+            currentSession.commit()
+
+    def __del__(self):
+        print(f"DbHandler del")
+        self.sessionMaker.close_all()
