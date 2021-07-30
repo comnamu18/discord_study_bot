@@ -1,7 +1,7 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey
-from table.user import User
+from tables.user import User
 
 Base = declarative_base()
 
