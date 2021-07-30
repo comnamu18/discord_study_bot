@@ -1,6 +1,6 @@
 import utils.handle_time
 from table.user import User
-from table.studyLog import StudyLog
+from table.study_log import StudyLog
 
 from sqlalchemy.orm import sessionmaker as sqlalchemy_sessionmaker
 from sqlalchemy import create_engine as sqlalchemy_create_engine
