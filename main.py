@@ -5,10 +5,11 @@ from dotenv import load_dotenv
 from utils import handle_db
 from utils import handle_time
 
+from msgs.db_msg import db_msgs
+
 load_dotenv()
 token = os.getenv("DISCORD_TOKEN")
 db_name = os.getenv("DISCORD_DB")
-tb_name = os.getenv("DISCORD_DB_TB")
 admin_name = os.getenv("DISCORD_ADMIN")
 
 bot = commands.Bot(command_prefix="!")
@@ -24,15 +25,17 @@ async def on_ready():
 @bot.command(name="hi")
 async def hi(ctx):
     current_time = handle_time.get_current_time()
-    db_handler.start_study(ctx.author.name, current_time)
-    await ctx.send(f"{current_time} : 안녕하세요 {ctx.author.name}님!")
+    hi_result = db_handler.start_study(ctx.author, current_time)
+    result_msg = db_msgs.get(hi_result).format(time=current_time, name=ctx.author.name)
+    await ctx.send(result_msg)
 
 
 @bot.command(name="bye")
 async def bye(ctx):
     current_time = handle_time.get_current_time()
-    db_handler.end_study(ctx.author.name, current_time)
-    await ctx.send(f"{current_time} :안녕히가세요 {ctx.author.name}님!")
+    bye_result = db_handler.end_study(ctx.author, current_time)
+    result_msg = db_msgs.get(bye_result).format(time=current_time, name=ctx.author.name)
+    await ctx.send(result_msg)
 
 
 @bot.command(name="alluser")
@@ -49,8 +52,8 @@ async def alluser(ctx):
 
 @bot.command(name="mylog")
 async def mylog(ctx):
-    user_name = ctx.author.name
-    study_logs = db_handler.get_all_study_logs(user_name)
+    user_id = ctx.author.id
+    study_logs = db_handler.get_my_study_logs(user_id)
     study_logs_text = ""
     for x in study_logs:
         study_logs_text += str(x) + "\n"
