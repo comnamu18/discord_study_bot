@@ -30,3 +30,4 @@ jobs:
           flake8: true
           black_args: "--line-length=79"
           flake8_args: "--max-line-length=79"
+          auto_fix: true
