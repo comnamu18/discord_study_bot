@@ -58,12 +58,12 @@ class DbHandler:
 
                 # 로그가 없음 = 첫 스터디
                 if recent_study_log is None:
-                    currentSession.add(StudyLog(user_id, user_name, current_time))
+                    currentSession.add(StudyLog(user_id, current_time))
                 # recent_study_log.end_time is None -> 지난 스터디에서 !bye를 안 함
                 elif recent_study_log.end_time is None:
                     recent_study_log.start_time = current_time
                 else:
-                    currentSession.add(StudyLog(user_id, user_name, current_time))
+                    currentSession.add(StudyLog(user_id, current_time))
 
                 currentSession.commit()
                 return DbEnum.START_STUDY_SUCCESS
@@ -74,7 +74,6 @@ class DbHandler:
 
     def end_study(self, user, current_time):
         user_id = user.id
-        user_name = user.name
         print(f"end study : {current_time}")
 
         try:
