@@ -44,9 +44,10 @@ RUN ln -s /usr/bin/pip3 /usr/bin/pip
 #Poetry Setttings
 RUN pip install "poetry==$POETRY_VERSION"
 WORKDIR /workspace
-COPY poetry.lock pyproject.toml /workspace/
+COPY poetry.lock pyproject.toml main.py ./
+COPY utils/ ./utils/
 
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-interaction
 
-COPY . /workspace
+CMD [ "poetry", "run", "python", "main.py" ]
