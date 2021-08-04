@@ -1,8 +1,15 @@
 # discord_study_bot
+
 Discord 랜선 각자 모여 코딩용 bot
 
+## Bot 실행법
+
+1. `.env.example`을 참고해서 `.env` 파일 생성 또는 환경 변수 추가
+2. Docker 이미지 빌드 후 컨테이너 실행
+
 ## POETRY 사용 방법
-```
+
+``` sh
 # 현재 프로젝트의 의존성 설치
 poetry install
 # 패키지 업데이트
@@ -20,6 +27,7 @@ poetry env use {파이썬경로 or python3}
 ```
 
 ## Reference
+
 [Python으로 Discord Bot 만들기 Tutorial](https://realpython.com/how-to-make-a-discord-bot-python/)
 
 [Python 기반 Discord Bot](https://github.com/team-play-together/together-bot)
