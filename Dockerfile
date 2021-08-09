@@ -1,53 +1,42 @@
-FROM ubuntu:18.04
-
-ARG DEBIAN_FRONTEND=noninteractive
+FROM python:3.6 as python-base
 ENV TZ=Asia/Seoul \
-    LC_ALL=ko_KR.UTF-8 \
-    LANG=ko_KR.UTF-8 \
-    LANGUAGE=ko_KR.UTF-8 \
+    \
+    # python    
     PYTHONFAULTHANDLER=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONHASHSEED=random \
+    PYTHONDONTWRITEBYTECODE=1 \
+    \
+    # pip
     PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100 \
-    POETRY_VERSION=1.1.7
+    \
+    # poetry
+    POETRY_VERSION=1.1.7 \
+    POETRY_HOME="/opt/poetry" \
+    POETRY_VIRTUALENVS_IN_PROJECT=false \
+    POETRY_NO_INTERACTION=1
 
-RUN apt-get update -y
-RUN apt-get install --no-install-recommends -y \
-    g++ \
-    ca-certificates \
-    python3-dev \
-    python3-distutils \
-    python3-venv \
-    git \
-    ntp \
-    tmux \
-    locales \
-    curl
 
-# cleanup
-RUN apt-get autoclean \
-	&& apt-get -y autoremove \	
-	&& rm -rf /var/lib/apt/lists/*
+# prepend poetry and venv to path
+ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
-RUN locale-gen ko_KR.UTF-8
+FROM python-base as builder-base
 
-# PIP and python settings
-RUN cd /tmp
-RUN curl -O https://bootstrap.pypa.io/get-pip.py
-RUN python3 get-pip.py
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
 
-RUN ln -s /usr/bin/python3 /usr/bin/python
-RUN ln -s /usr/bin/pip3 /usr/bin/pip
+WORKDIR /build
+COPY poetry.lock pyproject.toml ./
 
-#Poetry Setttings
-RUN pip install "poetry==$POETRY_VERSION"
-WORKDIR /workspace
-COPY poetry.lock pyproject.toml main.py ./
+RUN poetry export
+
+FROM python-base as release-base
+
+WORKDIR /app
+COPY main.py ./
 COPY utils/ ./utils/
+COPY --from=builder-base /build/requirements.txt ./
 
-RUN poetry config virtualenvs.create false
-RUN poetry install --no-interaction
+RUN pip install -r requirements.txt
 
-CMD [ "poetry", "run", "python", "main.py" ]
+CMD [ "python", "main.py" ]
