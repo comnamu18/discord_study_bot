@@ -6,11 +6,18 @@ on:
   pull_request:
     branches:
       - '**'
+    types:
+      - synchronize
+      - ready_for_review
+      - review_requested
+      - opened
+      - reopened
 
 jobs:
   run-linters:
     name: Run linters
     runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v2
