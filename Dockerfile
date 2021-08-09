@@ -19,7 +19,7 @@ ENV TZ=Asia/Seoul \
 
 
 # prepend poetry and venv to path
-ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
+ENV PATH="$POETRY_HOME/bin:$PATH"
 
 FROM python-base as builder-base
 
